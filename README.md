@@ -395,13 +395,9 @@ See the `Main.java` file for complete working examples:
 
 Contributions are welcome! Please feel free to submit pull requests or open issues.
 
-## License
-
-[Specify your license here]
-
 ## Author
 
-[Your name/organization]
+Manouchehr Jafari
 
 ## Support
 
