@@ -1,8 +1,5 @@
 package c2s.mjk;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * Abstract base class for asynchronous operations.
  * Simulates the deprecated Android AsyncTask pattern for Java environments.
@@ -13,9 +10,6 @@ import java.util.concurrent.Executors;
  * - onPostExecute(): Executes after background work completes
  */
 public abstract class Async extends Thread {
-
-    /** Thread pool for managing concurrent async operations */
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
      * Constructor for Async class.
