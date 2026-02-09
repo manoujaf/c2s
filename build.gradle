@@ -1,12 +1,18 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
-group = 'org.example'
-version = '1.0-SNAPSHOT'
+group = 'com.github.manoujaf'
+version = '1.0.1'
 
 repositories {
     mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
@@ -18,4 +24,16 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.manoujaf'
+            artifactId = 'c2s'
+            version = '1.0.1'
+
+            from components.java
+        }
+    }
 }
