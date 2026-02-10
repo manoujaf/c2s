@@ -31,7 +31,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.manoujaf'
             artifactId = 'c2s'
-            // version is inherited from project.version
+            version = '1.0.3'
 
             from components.java
         }
