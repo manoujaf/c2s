@@ -12,7 +12,6 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -114,42 +113,6 @@ public class Hash {
             final Mac mac = Mac.getInstance(algorithm);
             mac.init(key);
             byte[] bytes = mac.doFinal(data.getBytes(UTF_8));
-            final StringBuilder hash = new StringBuilder();
-            for (byte aByte : bytes) {
-                String hex = Integer.toHexString(0xFF & aByte);
-                if (hex.length() == 1) {
-                    hash.append('0');
-                }
-                hash.append(hex);
-            }
-            digest = hash.toString().toLowerCase();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return digest;
-    }
-
-    /**
-     *
-     * @param data text or data
-     * @param secret password or sth...
-     * @param algorithm like SHA-256
-     * @return hash string
-     */
-    public static String hmacDigestCoinex(String data, String secret, String algorithm) {
-        String digest = null;
-
-        boolean b = (data != null) && (secret != null);
-        if (!b) {
-            return null;
-        }
-
-        try {
-            final SecretKeySpec key = new SecretKeySpec((secret).getBytes(StandardCharsets.US_ASCII), algorithm);
-            final Mac mac = Mac.getInstance(algorithm);
-            mac.init(key);
-            byte[] bytes = mac.doFinal(data.getBytes(StandardCharsets.US_ASCII));
             final StringBuilder hash = new StringBuilder();
             for (byte aByte : bytes) {
                 String hex = Integer.toHexString(0xFF & aByte);

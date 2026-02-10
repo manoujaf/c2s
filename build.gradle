@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.manoujaf'
-version = '1.0.1'
+version = '1.0.2'
 
 repositories {
     mavenCentral()
@@ -31,7 +31,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.manoujaf'
             artifactId = 'c2s'
-            version = '1.0.1'
+            // version is inherited from project.version
 
             from components.java
         }

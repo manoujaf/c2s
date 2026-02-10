@@ -4,7 +4,6 @@ package c2s.mjk;
  * Represents a key-value pair for HTTP request headers and properties.
  * Used in conjunction with C2S class to configure request properties such as
  * authentication headers, content types, and custom headers.
- *
  * This immutable class stores a single request property and provides methods
  * to retrieve the key, value, and a SHA1 hash of the combined key-value pair.
  */
@@ -43,16 +42,6 @@ public class RequestProperty {
      */
     public String getValue() {
         return value;
-    }
-
-    /**
-     * Generates a SHA1 hash of the combined key and value.
-     * Useful for validating or identifying request properties.
-     *
-     * @return the SHA1 hash of (key + value)
-     */
-    public String getHash() {
-        return Hash.getHash(key + value, Hash.SHA1);
     }
 
 }

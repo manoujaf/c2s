@@ -34,7 +34,6 @@ import javax.net.ssl.HttpsURLConnection;
  * - Custom headers and request properties
  * - Basic HTTP authentication
  * - Asynchronous and synchronous operation modes
- *
  * Can be used directly by creating an instance and optionally overriding callback methods.
  * Default implementations provided for all callback methods.
  */
@@ -549,19 +548,9 @@ public class C2S extends Async {
         if (string == null) {
             return "";
         } else {
-            try {
-                return URLEncoder.encode(string, UTF_8);
-            } catch (UnsupportedEncodingException e) {
-                if (showLog) {
-                    printLog("UnsupportedEncodingException: " + api);
-                    e.printStackTrace();
-                }
-                return "";
-            }
+            return URLEncoder.encode(string, StandardCharsets.UTF_8);
         }
     }
-
-    /***********************************************/
 
     /**
      * Adds a custom header property to the HTTP request.

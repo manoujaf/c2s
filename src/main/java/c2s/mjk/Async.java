@@ -3,7 +3,6 @@ package c2s.mjk;
 /**
  * Abstract base class for asynchronous operations.
  * Simulates the deprecated Android AsyncTask pattern for Java environments.
- *
  * This class provides a thread-based execution model with three lifecycle phases:
  * - onPreExecute(): Executes before background work begins
  * - doInBackground(): Executes the main background work
