@@ -16,7 +16,6 @@ public abstract class Async extends Thread {
     @Override
     public void run() {
         super.run();
-        onPreExecute();
         doInBackground();
         if (uiExecutor != null) {
             uiExecutor.execute(this::onPostExecute);
@@ -24,9 +23,6 @@ public abstract class Async extends Thread {
             onPostExecute();
         }
     }
-
-    // Called before background work starts
-    public abstract void onPreExecute();
 
     // Called to perform background work
     public abstract void doInBackground();
