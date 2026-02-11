@@ -151,6 +151,11 @@ public class C2S extends Async {
     }
 
     @Override
+    public void onPreExecute() {
+        onInit();
+    }
+
+    @Override
     public void doInBackground() {
 
         if (showLog) {
