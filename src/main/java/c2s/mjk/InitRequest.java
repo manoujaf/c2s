@@ -4,23 +4,45 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Example implementation of C2S for API initialization requests.
- * Demonstrates how to extend C2S for more complex use cases with custom logic.
+ * Example: Professional API initialization request using extended C2S pattern.
  *
- * This class shows:
- * - Initializing request with specific parameters
- * - Parsing JSON responses
- * - Handling both sync and async callbacks
- * - Processing configuration data from server
+ * This demonstrates the RECOMMENDED approach for production applications:
+ *
+ * FEATURES DEMONSTRATED:
+ * - Custom callback interfaces for type-safe API
+ * - Automatic JSON parsing and error handling
+ * - Async processing (onResponseAsync) for heavy background work
+ * - Method chaining for fluent API design
+ * - Separation of concerns (network vs business logic)
+ *
+ * LIFECYCLE:
+ * 1. onInit() - Setup request parameters and enable async processing
+ * 2. HTTP request executes in background
+ * 3. onResponseAsync() - Parse and cache data on background thread
+ * 4. onResponse() - Call success callback (on UI thread if UiExecutor set)
+ * 5. User's success/error callback is invoked
+ *
+ * USAGE:
+ * new InitRequest(endpoint, path)
+ *     .setLoggingEnabled(true)
+ *     .onSuccess(config -> { handle success })
+ *     .onError((code, msg) -> {  handle error })
+ *     .start();
  */
 public class InitRequest extends C2S {
 
-    /** Callback interface for successful initialization */
+    /**
+     * Callback interface for successful initialization.
+     * Provides parsed JSON configuration from server.
+     */
     public interface OnInitSuccess {
         void onSuccess(JSONObject serverConfig);
     }
 
-    /** Callback interface for initialization errors */
+    /**
+     * Callback interface for initialization errors.
+     * Provides error code and message for handling.
+     */
     public interface OnInitError {
         void onError(int code, String message);
     }
@@ -98,14 +120,24 @@ public class InitRequest extends C2S {
 
     /**
      * Initializes request with required parameters.
-     * Override to customize what parameters are sent.
+     * Called automatically before HTTP request starts.
+     *
+     * This is where you:
+     * - Enable async processing if needed
+     * - Add request parameters (become JSON body for POST)
+     * - Add custom headers
+     * - Configure authentication
+     *
+     * Override this in your own extended classes to customize behavior.
      */
     @Override
     public void onInit() {
-        // Enable async processing for real-time response handling
+        // Enable async processing - allows onResponseAsync to run before onResponse
+        // Useful for heavy data parsing/caching that shouldn't block UI
         enableAsyncProcess();
 
-        // Add initialization parameters
+        // Add initialization parameters (sent as JSON body)
+        // In a real app, these might come from device info, user prefs, etc.
         addParameter("appID", "test-app-001")
                 .addParameter("appVersion", "1.0.0")
                 .addParameter("language", "en")
@@ -168,10 +200,20 @@ public class InitRequest extends C2S {
 
     /**
      * Processes response asynchronously in background thread.
-     * Called before onResponse() if enableAsyncProcess() is set.
+     * Called BEFORE onResponse() if enableAsyncProcess() is enabled.
      *
-     * @param responseCode the HTTP response code
-     * @param response the server response body
+     * USE THIS FOR:
+     * - Heavy JSON parsing
+     * - Database operations
+     * - File I/O
+     * - Caching data
+     * - Any CPU-intensive work
+     *
+     * This keeps the UI thread responsive while processing large responses.
+     * After this completes, onResponse() is called (on UI thread if UiExecutor set).
+     *
+     * @param responseCode the HTTP response code (200, 404, etc.)
+     * @param response the raw server response body (JSON string)
      */
     @Override
     public void onResponseAsync(int responseCode, String response) {
@@ -179,18 +221,22 @@ public class InitRequest extends C2S {
         System.out.println("  Response size: " + response.length() + " bytes");
 
         try {
+            // Parse JSON in background thread (doesn't block UI)
             JSONObject json = new JSONObject(response);
             System.out.println("  Parsed fields: " + json.keySet());
 
             // Extract and cache server configuration
+            // In a real app, this might save to SharedPreferences, database, etc.
             if (json.has("serverTime")) {
                 String serverTime = json.getString("serverTime");
                 System.out.println("  Server time: " + serverTime);
+                // Cache.set("server_time", serverTime);
             }
 
             if (json.has("config")) {
                 JSONObject config = json.getJSONObject("config");
                 System.out.println("  Configuration loaded: " + config.length() + " items");
+                // Cache.set("app_config", config);
             }
         } catch (JSONException e) {
             System.out.println("  JSON parse error: " + e.getMessage());
