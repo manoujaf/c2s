@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
@@ -22,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * HTTP/HTTPS request client for asynchronous network communication.
@@ -78,8 +78,8 @@ public class C2S extends Async {
     private int connectTimeout;
     /** Read timeout in milliseconds */
     private int readTimeout;
-    /** HTTPS connection object */
-    private HttpsURLConnection httpsURLConnection;
+    /** HTTP/HTTPS connection object (HttpsURLConnection is a subclass of HttpURLConnection) */
+    private HttpURLConnection httpURLConnection;
     /** List of request headers/properties */
     private final List<RequestProperty> requestPropertyList;
     /** HTTP response code from server */
@@ -239,9 +239,9 @@ public class C2S extends Async {
             if (isProxySet) {
                 final InetSocketAddress proxyInet = new InetSocketAddress(proxyHost, proxyPort);
                 final Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyInet);
-                httpsURLConnection = (HttpsURLConnection) url.openConnection(proxy);
+                httpURLConnection = (HttpURLConnection) url.openConnection(proxy);
             } else {
-                httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                httpURLConnection = (HttpURLConnection) url.openConnection();
             }
 
             // Works for HTTP and HTTPS, but sets a global default!
@@ -254,13 +254,13 @@ public class C2S extends Async {
             }
 
             // set request method
-            httpsURLConnection.setRequestMethod(requestMethod);
+            httpURLConnection.setRequestMethod(requestMethod);
 
             if (readTimeout != 0) {
-                httpsURLConnection.setReadTimeout(readTimeout);
+                httpURLConnection.setReadTimeout(readTimeout);
             }
             if (connectTimeout != 0) {
-                httpsURLConnection.setConnectTimeout(connectTimeout);
+                httpURLConnection.setConnectTimeout(connectTimeout);
             }
 
             // add request property
@@ -271,10 +271,10 @@ public class C2S extends Async {
             }
 
             if (isJsonBody) {
-                httpsURLConnection.setRequestProperty("Content-Type", "application/json");
-                httpsURLConnection.setRequestProperty("Accept", "application/json");
+                httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                httpURLConnection.setRequestProperty("Accept", "application/json");
             } else {
-                httpsURLConnection.setRequestProperty("contentType", "application/x-www-form-urlencoded");
+                httpURLConnection.setRequestProperty("contentType", "application/x-www-form-urlencoded");
             }
 
             // write data
@@ -285,34 +285,34 @@ public class C2S extends Async {
                         postData = putData;
                     }
 
-                    httpsURLConnection.setDoInput(true);
-                    httpsURLConnection.setDoOutput(true);
+                    httpURLConnection.setDoInput(true);
+                    httpURLConnection.setDoOutput(true);
 
                     if (isJsonBody) {
-                        try(OutputStream os = httpsURLConnection.getOutputStream()) {
+                        try(OutputStream os = httpURLConnection.getOutputStream()) {
                             byte[] input = jsonData.toString().getBytes(StandardCharsets.UTF_8);
                             os.write(input, 0, input.length);
                         }
                     } else {
-                        httpsURLConnection.getOutputStream().write(postData.getBytes(StandardCharsets.UTF_8));
+                        httpURLConnection.getOutputStream().write(postData.getBytes(StandardCharsets.UTF_8));
                     }
 
-                    httpsURLConnection.getOutputStream().flush();
-                    httpsURLConnection.getOutputStream().close();
+                    httpURLConnection.getOutputStream().flush();
+                    httpURLConnection.getOutputStream().close();
                 }
             }
 
-            //httpsURLConnection.connect();
-            responseCode = httpsURLConnection.getResponseCode();
+            //httpURLConnection.connect();
+            responseCode = httpURLConnection.getResponseCode();
 
             final StringBuilder stringBuilder;
             final BufferedReader bufferedReader;
             final InputStreamReader inputStreamReader;
 
             if(getHttpResponseType() == HTTP_RESPONSE_SUCCESS) {
-                inputStreamReader = new InputStreamReader(httpsURLConnection.getInputStream());
+                inputStreamReader = new InputStreamReader(httpURLConnection.getInputStream());
             } else {
-                inputStreamReader = new InputStreamReader(httpsURLConnection.getErrorStream());
+                inputStreamReader = new InputStreamReader(httpURLConnection.getErrorStream());
             }
 
             bufferedReader = new BufferedReader(inputStreamReader);
@@ -394,16 +394,16 @@ public class C2S extends Async {
                 final FileInputStream fileInputStream = new FileInputStream(file);
 
                 // Open a HTTP  connection to  the URL
-                httpsURLConnection = (HttpsURLConnection) url.openConnection();
-                httpsURLConnection.setDoInput(true); // Allow Inputs
-                httpsURLConnection.setDoOutput(true); // Allow Outputs
-                httpsURLConnection.setUseCaches(false); // Don't use a Cached Copy
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setDoInput(true); // Allow Inputs
+                httpURLConnection.setDoOutput(true); // Allow Outputs
+                httpURLConnection.setUseCaches(false); // Don't use a Cached Copy
 
-                httpsURLConnection.setRequestMethod(requestMethod);
-                httpsURLConnection.setRequestProperty("Connection", "Keep-Alive");
-                httpsURLConnection.setRequestProperty("ENCTYPE", "multipart/form-data");
-                httpsURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                httpsURLConnection.setRequestProperty("uploaded_file", fileName);
+                httpURLConnection.setRequestMethod(requestMethod);
+                httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+                httpURLConnection.setRequestProperty("ENCTYPE", "multipart/form-data");
+                httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                httpURLConnection.setRequestProperty("uploaded_file", fileName);
 
                 // add request property
                 if (!requestPropertyList.isEmpty()) {
@@ -412,7 +412,7 @@ public class C2S extends Async {
                     }
                 }
 
-                dos = new DataOutputStream(httpsURLConnection.getOutputStream());
+                dos = new DataOutputStream(httpURLConnection.getOutputStream());
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
                 dos.writeBytes(lineEnd);
@@ -437,16 +437,16 @@ public class C2S extends Async {
                 dos.writeBytes(lineEnd);
                 dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
-                responseCode = httpsURLConnection.getResponseCode();
+                responseCode = httpURLConnection.getResponseCode();
 
                 final StringBuilder stringBuilder;
                 final BufferedReader bufferedReader;
                 final InputStreamReader inputStreamReader;
 
                 if(getHttpResponseType() == HTTP_RESPONSE_SUCCESS) {
-                    inputStreamReader = new InputStreamReader(httpsURLConnection.getInputStream());
+                    inputStreamReader = new InputStreamReader(httpURLConnection.getInputStream());
                 } else {
-                    inputStreamReader = new InputStreamReader(httpsURLConnection.getErrorStream());
+                    inputStreamReader = new InputStreamReader(httpURLConnection.getErrorStream());
                 }
 
                 bufferedReader = new BufferedReader(inputStreamReader);
@@ -564,10 +564,10 @@ public class C2S extends Async {
      */
     public final C2S addRequestProperty(String key, String value) {
 
-        if (httpsURLConnection == null) {
+        if (httpURLConnection == null) {
             requestPropertyList.add(new RequestProperty(key, value));
         } else {
-            httpsURLConnection.addRequestProperty(key, value);
+            httpURLConnection.addRequestProperty(key, value);
         }
 
         return this;
