@@ -177,7 +177,7 @@ public class C2S extends Async {
             printLog("onPostExecute: (" +getResponseCode() + ") " + api + "\nResponse: " + response);
         }
 
-        if (getResponseCode() == HTTP_RESPONSE_SUCCESS) {
+        if (getHttpResponseType() == HTTP_RESPONSE_SUCCESS) {
             onResponse(responseCode, response);
         } else {
             if (response.equals("127.0.0.1")) {
