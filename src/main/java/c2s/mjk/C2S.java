@@ -117,6 +117,8 @@ public class C2S extends Async {
     private File file;
     /** Name of the file to upload */
     private String fileName;
+    /** Multipart form field name (Content-Disposition name="..."); defaults to "uploaded_file" */
+    private String multipartFieldName = "uploaded_file";
     /** Maximum buffer size for file reading */
     private int maxBufferSize;
     /** Flag to enable asynchronous callbacks */
@@ -403,7 +405,7 @@ public class C2S extends Async {
                 httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
                 httpURLConnection.setRequestProperty("ENCTYPE", "multipart/form-data");
                 httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                httpURLConnection.setRequestProperty("uploaded_file", fileName);
+                httpURLConnection.setRequestProperty(multipartFieldName, fileName);
 
                 // add request property
                 if (!requestPropertyList.isEmpty()) {
@@ -414,7 +416,7 @@ public class C2S extends Async {
 
                 dos = new DataOutputStream(httpURLConnection.getOutputStream());
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"" + multipartFieldName + "\";filename=\"" + fileName + "\"" + lineEnd);
                 dos.writeBytes(lineEnd);
 
                 // create a buffer of  maximum size
@@ -786,6 +788,15 @@ public class C2S extends Async {
      */
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    /**
+     * Sets the multipart form field name used in Content-Disposition (default: "uploaded_file").
+     *
+     * @param multipartFieldName the field name expected by the server
+     */
+    public void setMultipartFieldName(String multipartFieldName) {
+        this.multipartFieldName = multipartFieldName;
     }
 
     /**
