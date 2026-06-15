@@ -119,6 +119,8 @@ public class C2S extends Async {
     private String fileName;
     /** Multipart form field name (Content-Disposition name="..."); defaults to "uploaded_file" */
     private String multipartFieldName = "uploaded_file";
+    /** Explicit MIME type for the file part (Content-Type header); null = omit the header */
+    private String multipartContentType = null;
     /** Maximum buffer size for file reading */
     private int maxBufferSize;
     /** Flag to enable asynchronous callbacks */
@@ -417,6 +419,9 @@ public class C2S extends Async {
                 dos = new DataOutputStream(httpURLConnection.getOutputStream());
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes("Content-Disposition: form-data; name=\"" + multipartFieldName + "\";filename=\"" + fileName + "\"" + lineEnd);
+                if (multipartContentType != null && !multipartContentType.isEmpty()) {
+                    dos.writeBytes("Content-Type: " + multipartContentType + lineEnd);
+                }
                 dos.writeBytes(lineEnd);
 
                 // create a buffer of  maximum size
@@ -797,6 +802,17 @@ public class C2S extends Async {
      */
     public void setMultipartFieldName(String multipartFieldName) {
         this.multipartFieldName = multipartFieldName;
+    }
+
+    /**
+     * Sets an explicit MIME type written as Content-Type in the file part header.
+     * If not called (or set to null), the header is omitted and the server must guess.
+     * Always set this explicitly — do not rely on filename extension guessing.
+     *
+     * @param multipartContentType e.g. "image/jpeg"
+     */
+    public void setMultipartContentType(String multipartContentType) {
+        this.multipartContentType = multipartContentType;
     }
 
     /**
